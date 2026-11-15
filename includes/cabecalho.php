@@ -20,6 +20,7 @@ if (!isset($titulo)) {
             <a href="inicio.php">Início</a>
             <a href="academias.php">Treinar</a>
             <a href="meusAgendamentos.php">Minhas aulas</a>
+            <a href="perfil.php">Meu perfil</a>
             <details class="menu-suspenso">
                 <summary>Cadastros</summary>
                 <div class="menu-lista">
@@ -27,6 +28,7 @@ if (!isset($titulo)) {
                     <a href="verPlanos.php">Planos</a>
                     <a href="verAcademias.php">Academias</a>
                     <a href="verAulas.php">Aulas</a>
+                    <a href="cadastroTreino.php">Cadastrar treino</a>
                 </div>
             </details>
             <a class="barra-sair" href="../logica/logout.php">Sair</a>

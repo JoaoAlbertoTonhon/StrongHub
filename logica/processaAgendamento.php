@@ -5,34 +5,42 @@ if (!isset($_SESSION['alunoId'])) {
     die();
 }
 require '../includes/funcoesBD.php';
-
-if (empty($_POST['aula_id']) || empty($_POST['academia_id'])) {
+if (
+    empty($_POST['aula_id']) ||
+    empty($_POST['academia_id']) ||
+    empty($_POST['data_aula'])
+) {
     header('location:../paginas/academias.php');
     die();
 }
-
 $alunoId = $_SESSION['alunoId'];
 $aulaId = (int)$_POST['aula_id'];
 $academiaId = (int)$_POST['academia_id'];
-$hoje = date('Y-m-d');
-
 $aula = buscarAula($aulaId);
-
-if (!academiaLiberada($alunoId, $academiaId)) {
+if (
+    !$aula ||
+    (int)$aula['academiaId'] != $academiaId ||
+    !academiaLiberada($alunoId, $academiaId)
+) {
     header('location:../paginas/academias.php');
     die();
 }
-
-if (contarAgendamentos($aulaId, $hoje) >= $aula['vagas']) {
+$dataAula = proximaDataDaAula(
+    $aula['diaSemana'],
+    $aula['horario']
+);
+if ($_POST['data_aula'] !== $dataAula) {
+    header('location:../paginas/aulas.php?academia=' . $academiaId . '&erro=data');
+    die();
+}
+if (contarAgendamentos($aulaId, $dataAula) >= $aula['vagas']) {
     header('location:../paginas/aulas.php?academia=' . $academiaId . '&erro=lotada');
     die();
 }
-
-if (alunoJaAgendou($alunoId, $aulaId, $hoje)) {
+if (alunoJaAgendou($alunoId, $aulaId, $dataAula)) {
     header('location:../paginas/aulas.php?academia=' . $academiaId . '&erro=ja');
     die();
 }
-
-registrarAgendamento($alunoId, $aulaId, $hoje);
+registrarAgendamento($alunoId, $aulaId, $dataAula);
 header('location:../paginas/aulas.php?academia=' . $academiaId . '&sucesso=1');
 die();

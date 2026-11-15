@@ -13,6 +13,9 @@ CREATE TABLE aluno (
   senha VARCHAR(20),
   objetivo VARCHAR(30),
   nivel VARCHAR(20)
+  altura DECIMAL(4,2),
+  peso DECIMAL(5,2),
+  condicoesSaude TEXT
 );
 
 CREATE TABLE plano (
@@ -76,6 +79,28 @@ CREATE TABLE agendamento (
   data DATE,
   FOREIGN KEY (aluno_id) REFERENCES aluno(id),
   FOREIGN KEY (aula_id) REFERENCES aula(id)
+);
+
+CREATE TABLE disponibilidade_aluno (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    aluno_id INT NOT NULL,
+    diaSemana VARCHAR(15) NOT NULL,
+    UNIQUE KEY uq_aluno_dia (aluno_id, diaSemana),
+    FOREIGN KEY (aluno_id)
+    REFERENCES aluno(id)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE treino (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    aluno_id INT NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT,
+    arquivo VARCHAR(255) NOT NULL,
+    dataCadastro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (aluno_id)
+    REFERENCES aluno(id)
+    ON DELETE CASCADE
 );
 
 INSERT INTO plano (nome, descricao, valor) VALUES

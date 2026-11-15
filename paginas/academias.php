@@ -23,7 +23,8 @@ while ($academia = mysqli_fetch_array($academias)) {
     echo '<span class="selo selo-cinza">'
         . substr($academia['horarioAbertura'], 0, 5) . ' às ' . substr($academia['horarioFechamento'], 0, 5)
         . '</span>';
-    echo '<a class="botao" href="checkin.php?academia=' . $academia['id'] . '">Treinar aqui hoje</a>';
+    echo '<a class="botao" href="checkin.php?academia=' . $academia['id'] . '">Fazer check-in</a>';
+    echo '<a class="botao-secundario" href="aulas.php?academia=' . $academia['id'] . '">Ver aulas</a>';
     echo '</div>';
 }
 ?>

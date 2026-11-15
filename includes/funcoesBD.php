@@ -166,21 +166,56 @@ function atualizarSenha($id, $novaSenha) {
     mysqli_query($conexao, $consulta);
 }
 
+
 function listarAlunos() {
     $conexao = conectar();
-    $consulta = "SELECT * FROM aluno ORDER BY nome";
+    $consulta = "SELECT aluno.*,
+                 TIMESTAMPDIFF(YEAR, dataNascimento, CURDATE()) AS idadeAtual
+                 FROM aluno ORDER BY nome";
     return mysqli_query($conexao, $consulta);
 }
 
+
+
 function cadastrarAluno($dados) {
     $conexao = conectar();
-    $consulta = "INSERT INTO aluno (nome, cpf, dataNascimento, idade, endereco, telefone, email, senha, objetivo, nivel)
-                 VALUES ('{$dados['nome']}', '{$dados['cpf']}', '{$dados['dataNascimento']}', {$dados['idade']},
-                         '{$dados['endereco']}', '{$dados['telefone']}', '{$dados['email']}', '{$dados['senha']}',
-                         '{$dados['objetivo']}', '{$dados['nivel']}')";
-    mysqli_query($conexao, $consulta);
+
+    $nome = mysqli_real_escape_string($conexao, $dados['nome']);
+    $cpf = mysqli_real_escape_string($conexao, $dados['cpf']);
+    $dataNascimento = mysqli_real_escape_string($conexao, $dados['dataNascimento']);
+    $endereco = mysqli_real_escape_string($conexao, $dados['endereco']);
+    $telefone = mysqli_real_escape_string($conexao, $dados['telefone'] ?? '');
+    $email = mysqli_real_escape_string($conexao, $dados['email']);
+    $senha = mysqli_real_escape_string($conexao, $dados['senha']);
+    $objetivo = mysqli_real_escape_string($conexao, $dados['objetivo'] ?? '');
+    $nivel = mysqli_real_escape_string($conexao, $dados['nivel'] ?? '');
+    $condicoes = mysqli_real_escape_string($conexao, $dados['condicoesSaude'] ?? '');
+
+    $idade = (int)$dados['idade'];
+
+    $altura = ($dados['altura'] ?? '') !== ''
+        ? (float)$dados['altura'] : 'NULL';
+
+    $peso = ($dados['peso'] ?? '') !== ''
+        ? (float)$dados['peso'] : 'NULL';
+
+    $consulta = "INSERT INTO aluno
+    (nome, cpf, dataNascimento, idade, endereco, telefone,
+     email, senha, objetivo, nivel, altura, peso, condicoesSaude)
+
+    VALUES
+    ('$nome', '$cpf', '$dataNascimento', $idade, '$endereco',
+     '$telefone', '$email', '$senha', '$objetivo', '$nivel',
+     $altura, $peso, '$condicoes')";
+
+    $resultado = mysqli_query($conexao, $consulta);
+
+    if (!$resultado) {
+        return false;
+    }
     return mysqli_insert_id($conexao);
 }
+
 
 function cadastrarAssinatura($alunoId, $planoId) {
     $conexao = conectar();
@@ -232,4 +267,117 @@ function cadastrarAula($dados) {
                  VALUES ({$dados['academiaId']}, '{$dados['modalidade']}', '{$dados['diaSemana']}',
                          '{$dados['horario']}', {$dados['vagas']})";
     return mysqli_query($conexao, $consulta);
+}
+
+function buscarAlunoPorId($id) {
+    $conexao = conectar();
+    $id = (int)$id;
+    $consulta = "SELECT aluno.*,
+                 TIMESTAMPDIFF(YEAR, dataNascimento, CURDATE()) AS idadeAtual
+                 FROM aluno WHERE id = $id";
+    $resultado = mysqli_query($conexao, $consulta);
+    return mysqli_fetch_array($resultado);
+}
+function listarDisponibilidadeAluno($alunoId) {
+    $conexao = conectar();
+    $alunoId = (int)$alunoId;
+    $consulta = "SELECT diaSemana FROM disponibilidade_aluno
+                 WHERE aluno_id = $alunoId";
+    return mysqli_query($conexao, $consulta);
+}
+
+function salvarDisponibilidadeAluno($alunoId, $dias) {
+    $conexao = conectar();
+    $alunoId = (int)$alunoId;
+    mysqli_query($conexao, "DELETE FROM disponibilidade_aluno
+                            WHERE aluno_id = $alunoId");
+    $diasPermitidos = [
+        'segunda', 'terca', 'quarta',
+        'quinta', 'sexta', 'sabado', 'domingo'
+    ];
+    if (!is_array($dias)) {
+        return false;
+    }
+    foreach ($dias as $dia) {
+        if (in_array($dia, $diasPermitidos, true)) {
+            $dia = mysqli_real_escape_string($conexao, $dia);
+            $consulta = "INSERT INTO disponibilidade_aluno
+                         (aluno_id, diaSemana)
+                         VALUES ($alunoId, '$dia')";
+            mysqli_query($conexao, $consulta);
+        }
+    }
+    return true;
+}
+
+function atualizarPerfilAluno($alunoId, $dados) {
+    $conexao = conectar();
+    $alunoId = (int)$alunoId;
+    $altura = ($dados['altura'] ?? '') !== ''
+        ? (float)$dados['altura'] : 'NULL';
+    $peso = ($dados['peso'] ?? '') !== ''
+        ? (float)$dados['peso'] : 'NULL';
+    $condicoes = mysqli_real_escape_string(
+        $conexao,
+        $dados['condicoesSaude'] ?? ''
+    );
+    $consulta = "UPDATE aluno SET
+                 altura = $altura,
+                 peso = $peso,
+                 condicoesSaude = '$condicoes'
+                 WHERE id = $alunoId";
+    return mysqli_query($conexao, $consulta);
+}
+function listarTreinosDoAluno($alunoId) {
+    $conexao = conectar();
+    $alunoId = (int)$alunoId;
+    $consulta = "SELECT * FROM treino
+                 WHERE aluno_id = $alunoId
+                 ORDER BY dataCadastro DESC";
+    return mysqli_query($conexao, $consulta);
+}
+function cadastrarTreino($alunoId, $nome, $descricao, $arquivo) {
+    $conexao = conectar();
+    $alunoId = (int)$alunoId;
+    $nome = mysqli_real_escape_string($conexao, $nome);
+    $descricao = mysqli_real_escape_string($conexao, $descricao);
+    $arquivo = mysqli_real_escape_string($conexao, $arquivo);
+    $consulta = "INSERT INTO treino
+                 (aluno_id, nome, descricao, arquivo)
+                 VALUES
+                 ($alunoId, '$nome', '$descricao', '$arquivo')";
+    return mysqli_query($conexao, $consulta);
+}
+function buscarTreinoDoAluno($treinoId, $alunoId) {
+    $conexao = conectar();
+    $treinoId = (int)$treinoId;
+    $alunoId = (int)$alunoId;
+    $consulta = "SELECT * FROM treino
+                 WHERE id = $treinoId
+                 AND aluno_id = $alunoId";
+    $resultado = mysqli_query($conexao, $consulta);
+    return mysqli_fetch_array($resultado);
+}
+function proximaDataDaAula($diaSemana, $horario) {
+    $dias = [
+        'domingo' => 0,
+        'segunda' => 1,
+        'terca' => 2,
+        'quarta' => 3,
+        'quinta' => 4,
+        'sexta' => 5,
+        'sabado' => 6
+    ];
+    $diaSemana = strtolower(trim($diaSemana));
+    if (!isset($dias[$diaSemana])) {
+        return date('Y-m-d');
+    }
+    $data = new DateTime('today');
+    $diaAtual = (int)$data->format('w');
+    $diferenca = ($dias[$diaSemana] - $diaAtual + 7) % 7;
+    if ($diferenca == 0 && date('H:i:s') > $horario) {
+        $diferenca = 7;
+    }
+    $data->modify('+' . $diferenca . ' days');
+    return $data->format('Y-m-d');
 }

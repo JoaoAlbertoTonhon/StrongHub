@@ -23,7 +23,7 @@ require '../includes/cabecalho.php';
     <?php
     while ($aluno = mysqli_fetch_array($alunos)) {
         echo '<tr><td>' . $aluno['nome'] . '</td><td>' . $aluno['cpf'] . '</td>';
-        echo '<td>' . $aluno['idade'] . '</td><td>' . $aluno['endereco'] . '</td>';
+        echo '<td>' . $aluno['idadeAtual'] . '</td><td>' . $aluno['endereco'] . '</td>';
         echo '<td>' . $aluno['email'] . '</td><td>' . $aluno['telefone'] . '</td></tr>';
     }
     ?>
