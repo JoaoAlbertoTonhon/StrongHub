@@ -12,7 +12,7 @@ CREATE TABLE aluno (
   email VARCHAR(50),
   senha VARCHAR(20),
   objetivo VARCHAR(30),
-  nivel VARCHAR(20)
+  nivel VARCHAR(20),
   altura DECIMAL(4,2),
   peso DECIMAL(5,2),
   condicoesSaude TEXT
