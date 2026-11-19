@@ -26,7 +26,7 @@ A chave da API não está no projeto. Crie a pasta `C:\xampp\secrets` e, dentro 
 
 ```php
 <?php
-return 'Cole a chave da API';
+return 'AQ.Ab8RN6KQqAK1moABcPfH7-53tBTb4apNkSitWHHSuy6mAU9d2w';
 ```
 
 A chave pode ser gerada gratuitamente no Google AI Studio (aistudio.google.com).
