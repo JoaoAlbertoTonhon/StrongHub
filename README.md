@@ -26,7 +26,7 @@ A chave da API não está no projeto. Crie a pasta `C:\xampp\secrets` e, dentro 
 
 ```php
 <?php
-return 'SUA_CHAVE_DO_GEMINI';
+return 'AQ.Ab8RN6LTwWr_guYPTRo8nplholO68MJK96eAAq7w-CxoIaiE2Q';
 ```
 
 A chave pode ser gerada gratuitamente no Google AI Studio (aistudio.google.com).
