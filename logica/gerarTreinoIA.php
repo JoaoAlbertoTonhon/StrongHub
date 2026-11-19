@@ -105,12 +105,12 @@ Não recomende medicamentos, suplementos ou tratamentos.
 Quando apresentar sugestões gerais, deixe claro que elas precisam ser avaliadas e aprovadas por um profissional antes de serem utilizadas.";
 
 $dadosRequisicao = [
-    'model' => 'gemini-3.8-flash',
+    'model' => 'gemini-3.1-flash-lite',
     'store' => false,
     'system_instruction' => $instrucao,
     'input' => $prompt,
     'generation_config' => [
-        'temperature' => 0.3
+        'thinking_level' => 'low'
     ]
 ];
 
@@ -156,27 +156,17 @@ if (
         'Erro Gemini HTTP ' . $codigoHTTP . ': ' .
         $erroCurl . ' ' . $resposta
     );
-
     $_SESSION['erroGemini'] = 'Não foi possível gerar o treino. Confira a conexão, a chave e a cota da API.';
-
     header('location:../paginas/perfil.php');
     die();
 }
-
 $respostaJSON = json_decode($resposta, true);
-
 $sugestao = '';
-
 if (isset($respostaJSON['steps'])) {
-
     foreach ($respostaJSON['steps'] as $etapa) {
-
         if (($etapa['type'] ?? '') === 'model_output') {
-
             foreach ($etapa['content'] ?? [] as $conteudo) {
-
                 if (($conteudo['type'] ?? '') === 'text') {
-
                     $sugestao .= $conteudo['text'] . "\n";
                 }
             }
@@ -196,4 +186,3 @@ $_SESSION['sugestaoTreinoIA'] = trim($sugestao);
 
 header('location:../paginas/perfil.php#sugestaoIA');
 die();
-

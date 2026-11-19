@@ -97,6 +97,61 @@ if (isset($_GET['erro'])) {
         Salvar alterações
     </button>
 </form>
+
+<?php
+
+if (isset($_SESSION['erroGemini'])) {
+
+    echo '<div class="aviso aviso-erro">';
+    echo htmlspecialchars($_SESSION['erroGemini']);
+    echo '</div>';
+
+    unset($_SESSION['erroGemini']);
+}
+
+if (isset($_SESSION['sugestaoTreinoIA'])) {
+
+    echo '<div class="cartao" id="sugestaoIA">';
+
+    echo '<h3>Sugestão de treino com Gemini</h3>';
+
+    echo '<div style="white-space: pre-wrap;">';
+
+    echo htmlspecialchars($_SESSION['sugestaoTreinoIA']);
+
+    echo '</div>';
+
+    echo '<p class="texto-suave">';
+    echo 'Esta é uma sugestão gerada por inteligência artificial e precisa ser avaliada por um profissional antes de ser utilizada.';
+    echo '</p>';
+
+    echo '</div>';
+
+    unset($_SESSION['sugestaoTreinoIA']);
+}
+?>
+<form class="formulario"
+      method="POST"
+      action="../logica/gerarTreinoIA.php">
+    <h3>Assistente de treino com IA</h3>
+    <p class="texto-suave">
+        Gere uma sugestão de treino considerando suas informações físicas,
+        objetivos, disponibilidade e limitações.
+    </p>
+    <div class="campo">
+        <label class="marcacao">
+            <input type="checkbox"
+                   name="consentimentoGemini"
+                   value="1"
+                   required>
+            Autorizo o envio das informações descritas acima ao Google Gemini
+            para gerar uma sugestão de treino.
+        </label>
+    </div>
+    <button class="botao botao-largo" type="submit">
+        Gerar sugestão de treino com IA
+    </button>
+</form>
 <h3>Meus treinos</h3>
 <?php
 if (mysqli_num_rows($treinos) == 0) {
