@@ -31,7 +31,8 @@ CREATE TABLE academia (
   endereco VARCHAR(100),
   cidade VARCHAR(50),
   horarioAbertura TIME,
-  horarioFechamento TIME
+  horarioFechamento TIME,
+  imagem VARCHAR(100)
 );
 
 CREATE TABLE assinatura (
@@ -104,25 +105,71 @@ CREATE TABLE treino (
 );
 
 INSERT INTO plano (nome, descricao, valor) VALUES
-('Plano Básico', 'Acesso a academias parceiras básicas', 69.90),
+('Plano Básico', 'Acesso às academias básicas parceiras', 69.90),
 ('Plano Premium', 'Acesso a todas as academias parceiras', 149.90);
 
-INSERT INTO academia (nome, endereco, cidade, horarioAbertura, horarioFechamento) VALUES
-('Academia Alfa', 'Rua Exemplo, 100', 'Presidente Prudente', '05:00:00', '22:00:00'),
-('Academia Beta', 'Av. Teste, 200', 'Presidente Prudente', '06:00:00', '21:00:00');
+INSERT INTO academia (nome, endereco, cidade, horarioAbertura, horarioFechamento, imagem) VALUES
+('Black Eagle Training Center', 'R. Donato Armelin, 1174 - Vila Liberdade', 'Presidente Prudente', '06:00:00', '22:00:00', 'black-eagle.jpg'),
+('B3 Box Academia', 'Av. Quatorze de Setembro, 136 - Uep1-S.2', 'Presidente Prudente', '06:00:00', '22:00:00', 'b3-box.jpg'),
+('Malibu Presidente Prudente', 'Av. Brasil, 60 - Vila Jesus', 'Presidente Prudente', '06:00:00', '22:00:00', 'malibu.jpg'),
+('BlueFit 24h', 'Av. Cel. José Soares Marcondes, 3139 - Jardim Bongiovani', 'Presidente Prudente', '00:00:00', '23:59:00', 'bluefit.jpg'),
+('Academia Cross Point', 'R. Risick Buchalla, 41 - Jardim dos Pioneiros', 'Presidente Prudente', '06:00:00', '22:00:00', 'cross-point.jpg');
 
-INSERT INTO plano_academia (plano_id, academia_id) VALUES (1, 1), (2, 1), (2, 2);
+INSERT INTO plano_academia (plano_id, academia_id)
+SELECT p.id, a.id FROM plano p JOIN academia a
+WHERE p.nome = 'Plano Premium'
+AND a.nome IN ('Black Eagle Training Center', 'B3 Box Academia', 'Malibu Presidente Prudente', 'BlueFit 24h', 'Academia Cross Point');
 
-INSERT INTO aluno (nome, cpf, dataNascimento, telefone, email, senha, objetivo, nivel) VALUES
-('Aluno Teste', '000.000.000-00', '2000-01-01', '18999999999', 'aluno@teste.com', '1234', 'hipertrofia', 'iniciante'),
-('Aluno Basico', '111.111.111-11', '2000-02-02', '18988888888', 'basico@teste.com', '1234', 'emagrecimento', 'iniciante');
+INSERT INTO plano_academia (plano_id, academia_id)
+SELECT p.id, a.id FROM plano p JOIN academia a
+WHERE p.nome = 'Plano Básico'
+AND a.nome IN ('Black Eagle Training Center', 'Academia Cross Point');
 
-INSERT INTO assinatura (aluno_id, plano_id, dataInicio, dataFim) VALUES
-(1, 2, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY)),
-(2, 1, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY));
+INSERT INTO aula (academia_id, modalidade, diaSemana, horario, vagas)
+SELECT id, 'Musculação orientada', 'segunda', '07:00:00', 10 FROM academia WHERE nome = 'Black Eagle Training Center';
+INSERT INTO aula (academia_id, modalidade, diaSemana, horario, vagas)
+SELECT id, 'Treinamento funcional', 'quarta', '18:00:00', 12 FROM academia WHERE nome = 'Black Eagle Training Center';
+INSERT INTO aula (academia_id, modalidade, diaSemana, horario, vagas)
+SELECT id, 'Treinamento funcional', 'sexta', '07:00:00', 12 FROM academia WHERE nome = 'Black Eagle Training Center';
 
-INSERT INTO aula (academia_id, modalidade, diaSemana, horario, vagas) VALUES
-(1, 'Spinning', 'segunda', '07:00:00', 2),
-(1, 'Pilates', 'quarta', '18:00:00', 10),
-(2, 'Funcional', 'sexta', '19:00:00', 8);
+INSERT INTO aula (academia_id, modalidade, diaSemana, horario, vagas)
+SELECT id, 'Crossfit', 'terca', '19:00:00', 15 FROM academia WHERE nome = 'B3 Box Academia';
+INSERT INTO aula (academia_id, modalidade, diaSemana, horario, vagas)
+SELECT id, 'Crossfit', 'quinta', '19:00:00', 15 FROM academia WHERE nome = 'B3 Box Academia';
+INSERT INTO aula (academia_id, modalidade, diaSemana, horario, vagas)
+SELECT id, 'Crossfit', 'sabado', '09:00:00', 12 FROM academia WHERE nome = 'B3 Box Academia';
 
+INSERT INTO aula (academia_id, modalidade, diaSemana, horario, vagas)
+SELECT id, 'Treino híbrido', 'segunda', '18:30:00', 14 FROM academia WHERE nome = 'Malibu Presidente Prudente';
+INSERT INTO aula (academia_id, modalidade, diaSemana, horario, vagas)
+SELECT id, 'Spinning', 'quarta', '07:00:00', 10 FROM academia WHERE nome = 'Malibu Presidente Prudente';
+INSERT INTO aula (academia_id, modalidade, diaSemana, horario, vagas)
+SELECT id, 'Treino híbrido', 'sexta', '18:30:00', 14 FROM academia WHERE nome = 'Malibu Presidente Prudente';
+
+INSERT INTO aula (academia_id, modalidade, diaSemana, horario, vagas)
+SELECT id, 'Musculação com peso livre', 'terca', '10:00:00', 20 FROM academia WHERE nome = 'BlueFit 24h';
+INSERT INTO aula (academia_id, modalidade, diaSemana, horario, vagas)
+SELECT id, 'Cardio', 'quinta', '06:00:00', 20 FROM academia WHERE nome = 'BlueFit 24h';
+INSERT INTO aula (academia_id, modalidade, diaSemana, horario, vagas)
+SELECT id, 'Musculação com peso livre', 'sabado', '14:00:00', 20 FROM academia WHERE nome = 'BlueFit 24h';
+
+INSERT INTO aula (academia_id, modalidade, diaSemana, horario, vagas)
+SELECT id, 'Funcional HIIT', 'segunda', '06:30:00', 12 FROM academia WHERE nome = 'Academia Cross Point';
+INSERT INTO aula (academia_id, modalidade, diaSemana, horario, vagas)
+SELECT id, 'Funcional HIIT', 'quarta', '06:30:00', 12 FROM academia WHERE nome = 'Academia Cross Point';
+INSERT INTO aula (academia_id, modalidade, diaSemana, horario, vagas)
+SELECT id, 'Funcional HIIT', 'sexta', '18:00:00', 12 FROM academia WHERE nome = 'Academia Cross Point';
+
+INSERT INTO aluno (nome, cpf, dataNascimento, idade, endereco, telefone, email, senha, objetivo, nivel) VALUES
+('Aluno Teste', '000.000.000-00', '2000-01-01', 26, 'Rua Exemplo, 100', '18999999999', 'aluno@teste.com', '1234', 'hipertrofia', 'iniciante'),
+('Aluno Basico', '111.111.111-11', '2000-02-02', 26, 'Av. Teste, 200', '18988888888', 'basico@teste.com', '1234', 'emagrecimento', 'iniciante');
+
+INSERT INTO assinatura (aluno_id, plano_id, dataInicio, dataFim)
+SELECT a.id, p.id, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+FROM aluno a JOIN plano p
+WHERE a.email = 'aluno@teste.com' AND p.nome = 'Plano Premium';
+
+INSERT INTO assinatura (aluno_id, plano_id, dataInicio, dataFim)
+SELECT a.id, p.id, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+FROM aluno a JOIN plano p
+WHERE a.email = 'basico@teste.com' AND p.nome = 'Plano Básico';

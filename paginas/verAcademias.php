@@ -18,7 +18,7 @@ require '../includes/cabecalho.php';
 <?php if (isset($_GET['sucesso'])) { echo '<div class="aviso aviso-sucesso">Cadastro realizado.</div>'; } ?>
 
 <div class="area-tabela">
-<table class="tabela">
+<table class="tabela table table-hover align-middle">
     <thead>
         <tr><th>Nome</th><th>Endereço</th><th>Cidade</th><th>Horário</th></tr>
     </thead>

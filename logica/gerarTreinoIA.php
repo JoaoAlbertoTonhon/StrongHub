@@ -65,44 +65,9 @@ $dadosAluno = [
     'condicoes_e_limitacoes' => $aluno['condicoesSaude']
 ];
 
-$prompt = "Crie uma sugestão de organização de treino para um aluno de academia.
+$prompt = "Crie uma sugestão de organização de treino para um aluno de academia.\n\nConsidere os seguintes dados:\n\n" . json_encode($dadosAluno, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n\nOrganize a resposta com:\n\n1. Resumo do objetivo do aluno.\n2. Divisão dos treinos durante a semana.\n3. Exercícios sugeridos para cada dia.\n4. Séries e repetições sugeridas, quando apropriado.\n5. Intervalos de descanso.\n6. Cuidados e observações importantes.\n\nRespeite os dias disponíveis do aluno.\n\nNão invente informações que não foram fornecidas.\n\nNão utilize altura e peso para diagnosticar condições de saúde.";
 
-Considere os seguintes dados:
-
-" . json_encode($dadosAluno, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "
-
-Organize a resposta com:
-
-1. Resumo do objetivo do aluno.
-2. Divisão dos treinos durante a semana.
-3. Exercícios sugeridos para cada dia.
-4. Séries e repetições sugeridas, quando apropriado.
-5. Intervalos de descanso.
-6. Cuidados e observações importantes.
-
-Respeite os dias disponíveis do aluno.
-
-Não invente informações que não foram fornecidas.
-
-Não utilize altura e peso para diagnosticar condições de saúde.";
-
-$instrucao = "Você é um assistente informativo de apoio a uma academia.
-
-Você não é médico, fisioterapeuta nem profissional que avaliou pessoalmente o aluno.
-
-Não faça diagnósticos, não prescreva tratamentos e não prometa que um exercício é seguro.
-
-Considere cuidadosamente as doenças, lesões e limitações informadas.
-
-Quando houver uma condição que exija avaliação ou liberação profissional, não apresente uma ficha específica como segura. Explique que é necessária uma avaliação de um profissional de saúde e de educação física habilitado.
-
-Não recomende exercícios que possam agravar uma limitação conhecida.
-
-Não invente informações sobre a saúde do aluno.
-
-Não recomende medicamentos, suplementos ou tratamentos.
-
-Quando apresentar sugestões gerais, deixe claro que elas precisam ser avaliadas e aprovadas por um profissional antes de serem utilizadas.";
+$instrucao = "Você é um assistente informativo de apoio a uma academia.\n\nVocê não é médico, fisioterapeuta nem profissional que avaliou pessoalmente o aluno.\n\nNão faça diagnósticos, não prescreva tratamentos e não prometa que um exercício é seguro.\n\nConsidere cuidadosamente as doenças, lesões e limitações informadas.\n\nQuando houver uma condição que exija avaliação ou liberação profissional, não apresente uma ficha específica como segura. Explique que é necessária uma avaliação de um profissional de saúde e de educação física habilitado.\n\nNão recomende exercícios que possam agravar uma limitação conhecida.\n\nNão invente informações sobre a saúde do aluno.\n\nNão recomende medicamentos, suplementos ou tratamentos.\n\nQuando apresentar sugestões gerais, deixe claro que elas precisam ser avaliadas e aprovadas por um profissional antes de serem utilizadas.";
 
 $dadosRequisicao = [
     'model' => 'gemini-3.1-flash-lite',
@@ -114,38 +79,31 @@ $dadosRequisicao = [
     ]
 ];
 
-if (!function_exists('curl_init')) {
-    $_SESSION['erroGemini'] = 'A extensão cURL do PHP não está habilitada.';
-    header('location:../paginas/perfil.php');
-    die();
-}
+$opcoes = [
+    'http' => [
+        'method' => 'POST',
+        'header' => "x-goog-api-key: " . trim($apiKey) . "\r\nContent-Type: application/json\r\n",
+        'content' => json_encode($dadosRequisicao, JSON_UNESCAPED_UNICODE),
+        'timeout' => 90,
+        'ignore_errors' => true
+    ]
+];
 
-$ch = curl_init(
-    'https://generativelanguage.googleapis.com/v1beta/interactions'
+$contexto = stream_context_create($opcoes);
+
+$resposta = @file_get_contents(
+    'https://generativelanguage.googleapis.com/v1beta/interactions',
+    false,
+    $contexto
 );
 
-curl_setopt_array($ch, [
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_POST => true,
-    CURLOPT_HTTPHEADER => [
-        'x-goog-api-key: ' . trim($apiKey),
-        'Content-Type: application/json'
-    ],
-    CURLOPT_POSTFIELDS => json_encode(
-        $dadosRequisicao,
-        JSON_UNESCAPED_UNICODE
-    ),
-    CURLOPT_CONNECTTIMEOUT => 15,
-    CURLOPT_TIMEOUT => 90
-]);
+$codigoHTTP = 0;
 
-$resposta = curl_exec($ch);
+if (isset($http_response_header[0]) && preg_match('/\s(\d{3})\s/', $http_response_header[0], $m)) {
+    $codigoHTTP = (int)$m[1];
+}
 
-$erroCurl = curl_error($ch);
-
-$codigoHTTP = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-curl_close($ch);
+$erroCurl = ($resposta === false) ? 'Falha na conexão' : '';
 
 if (
     $resposta === false ||
@@ -160,8 +118,10 @@ if (
     header('location:../paginas/perfil.php');
     die();
 }
+
 $respostaJSON = json_decode($resposta, true);
 $sugestao = '';
+
 if (isset($respostaJSON['steps'])) {
     foreach ($respostaJSON['steps'] as $etapa) {
         if (($etapa['type'] ?? '') === 'model_output') {
@@ -175,9 +135,7 @@ if (isset($respostaJSON['steps'])) {
 }
 
 if (trim($sugestao) === '') {
-
     $_SESSION['erroGemini'] = 'O Gemini não retornou uma sugestão de treino.';
-
     header('location:../paginas/perfil.php');
     die();
 }
